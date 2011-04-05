@@ -12,7 +12,7 @@ class DCWorldListener extends WorldListener {
 	}
 
 	@Override
-	public void onChunkUnloaded(ChunkUnloadEvent event) {
+	public void onChunkUnload(ChunkUnloadEvent event) {
 		Chunk chunk = event.getChunk();
 		event.setCancelled(plugin.getDataManager().checkTrainersInChunk(chunk));
 	}
