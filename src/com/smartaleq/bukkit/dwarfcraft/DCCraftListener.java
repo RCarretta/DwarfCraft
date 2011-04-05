@@ -14,7 +14,7 @@ class DCCraftListener extends PlayerListener {
 	}
 
 	@Override
-    public void onPlayerInteract(PlayerInteractEvent event) {
+	public void onPlayerInteract(PlayerInteractEvent event) {
 		if (event.getBlock().getType() == Material.WORKBENCH
 				&& event.isPlayer()) {
 			// schedule a *syncronous* task
