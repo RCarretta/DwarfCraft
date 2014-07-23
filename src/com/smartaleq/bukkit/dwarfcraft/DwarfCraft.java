@@ -27,123 +27,117 @@ import org.bukkit.plugin.PluginManager;
  */
 public class DwarfCraft extends JavaPlugin {
 
-	private final DCBlockListener blockListener = new DCBlockListener(this);
-	private final DCPlayerListener playerListener = new DCPlayerListener(this);
-	private final DCEntityListener entityListener = new DCEntityListener(this);
-	private final DCVehicleListener vehicleListener = new DCVehicleListener(this);
-	private final DCWorldListener worldListener = new DCWorldListener(this);
-	private final DCCraftListener craftListener = new DCCraftListener(this);
-	private ConfigManager cm;
-	private DataManager dm;
-	private Out out;
-	
-	protected static int debugMessagesThreshold = 0;
+    private final DCBlockListener blockListener = new DCBlockListener(this);
+    private final DCPlayerListener playerListener = new DCPlayerListener(this);
+    private final DCEntityListener entityListener = new DCEntityListener(this);
+    private final DCVehicleListener vehicleListener = new DCVehicleListener(this);
+    private final DCWorldListener worldListener = new DCWorldListener(this);
+    private final DCCraftListener craftListener = new DCCraftListener(this);
+    private ConfigManager cm;
+    private DataManager dm;
+    private Out out;
+    protected static int debugMessagesThreshold = 0;
 
-	protected ConfigManager getConfigManager() {
-		return cm;
-	}
+    protected ConfigManager getConfigManager() {
+        return cm;
+    }
 
-	protected DataManager getDataManager() {
-		return dm;
-	}
+    protected DataManager getDataManager() {
+        return dm;
+    }
 
-	// TODO: deprecate this, there has to be a better way - move Out to Dwarf?
-	protected Out getOut() {
-		return out;
-	}
+    // TODO: deprecate this, there has to be a better way - move Out to Dwarf?
+    protected Out getOut() {
+        return out;
+    }
 
-	// this is never used, I don't think
-	@Deprecated
-	private Player getPlayer(String playerName) {
-		Player[] players = this.getServer().getOnlinePlayers();
-		for (Player player : players) {
-			if (player.getName().equalsIgnoreCase(playerName))
-				return player;
-		}
-		return null;
-	}
+    // this is never used, I don't think
+    @Deprecated
+    private Player getPlayer(String playerName) {
+        Player[] players = this.getServer().getOnlinePlayers();
+        for (Player player : players) {
+            if (player.getName().equalsIgnoreCase(playerName)) {
+                return player;
+            }
+        }
+        return null;
+    }
 
-	@Override
-	public boolean onCommand(CommandSender sender, Command command,
-			String commandLabel, String[] args) {
-		DCCommand cmd = new DCCommand(this, command.getName());
-		return cmd.execute(sender, commandLabel, args);
-	}
+    @Override
+    public boolean onCommand(CommandSender sender, Command command,
+            String commandLabel, String[] args) {
+        DCCommand cmd = new DCCommand(this, command.getName());
+        return cmd.execute(sender, commandLabel, args);
+    }
 
-	/**
-	 * Called upon disabling the plugin.
-	 */
-	@Override
-	public void onDisable() {
-		/*
-		 * close dbs
-		 */
-	}
+    /**
+     * Called upon disabling the plugin.
+     */
+    @Override
+    public void onDisable() {
+        /*
+         * close dbs
+         */
+    }
 
-	/**
-	 * Called upon enabling the plugin
-	 */
-	@Override
-	public void onEnable() {
-		PluginManager pm = getServer().getPluginManager();
+    /**
+     * Called upon enabling the plugin
+     */
+    @Override
+    public void onEnable() {
+        PluginManager pm = getServer().getPluginManager();
 
-		pm.registerEvent(Event.Type.PLAYER_CHAT, playerListener,
-				Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener,
-				Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_ITEM, playerListener, Priority.Low,
-				this);
-		pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Low,
-				this);
-		
-		pm.registerEvent(Event.Type.ENTITY_DAMAGED, entityListener,
-				Priority.High, this);
-		pm.registerEvent(Event.Type.ENTITY_TARGET, entityListener,
-				Priority.High, this);
-		pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Priority.Low,
-				this);
+        pm.registerEvent(Event.Type.PLAYER_CHAT, playerListener,
+                Priority.Normal, this);
+        pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener,
+                Priority.Normal, this);
+        pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Low,
+                this);
+        pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Low,
+                this);
 
-		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.High,
-				this);
-		pm.registerEvent(Event.Type.BLOCK_DAMAGED, blockListener,
-				Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_RIGHTCLICKED, blockListener,
-				Priority.Low, this);
+        pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener,
+                Priority.High, this);
+        pm.registerEvent(Event.Type.ENTITY_TARGET, entityListener,
+                Priority.High, this);
+        pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Priority.Low,
+                this);
 
-		pm.registerEvent(Event.Type.VEHICLE_ENTER, vehicleListener,
-				Priority.Normal, this);
-		pm.registerEvent(Event.Type.VEHICLE_EXIT, vehicleListener,
-				Priority.Normal, this);
-		pm.registerEvent(Event.Type.VEHICLE_DAMAGE, vehicleListener,
-				Priority.Normal, this);
-		pm.registerEvent(Event.Type.VEHICLE_MOVE, vehicleListener,
-				Priority.Lowest, this);
+        pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.High,
+                this);
+        pm.registerEvent(Event.Type.BLOCK_DAMAGE, blockListener,
+                Priority.Normal, this);
 
-		pm.registerEvent(Event.Type.CHUNK_UNLOADED, worldListener,
-				Priority.Low, this);
-		pm.registerEvent(Event.Type.WORLD_LOADED, worldListener, Priority.Low,
-				this);
+        pm.registerEvent(Event.Type.VEHICLE_ENTER, vehicleListener,
+                Priority.Normal, this);
+        pm.registerEvent(Event.Type.VEHICLE_EXIT, vehicleListener,
+                Priority.Normal, this);
+        pm.registerEvent(Event.Type.VEHICLE_DAMAGE, vehicleListener,
+                Priority.Normal, this);
+        pm.registerEvent(Event.Type.VEHICLE_MOVE, vehicleListener,
+                Priority.Lowest, this);
 
-		pm.registerEvent(Event.Type.BLOCK_INTERACT, craftListener,
-				Priority.Normal, this);
-
-		cm = new ConfigManager(this, "./plugins/DwarfCraft/",
-				"DwarfCraft.config");
-		dm = new DataManager(this, cm);
-		out = new Out(this);
-		
-		// readGreeterMessagesfile() depends on datamanager existing, so this
-		// has to go here 
-		if (!getConfigManager().readGreeterMessagesfile()) {
-			System.out
-					.println("[SEVERE] Failed to read DwarfCraft Greeter Messages)");
-			getServer().getPluginManager().disablePlugin(this);
-		}
+        pm.registerEvent(Event.Type.CHUNK_UNLOAD, worldListener,
+                Priority.Low, this);
+        pm.registerEvent(Event.Type.WORLD_LOAD, worldListener, Priority.Low,
+                this);
 
 
-		PluginDescriptionFile pdfFile = this.getDescription();
-		System.out.println(pdfFile.getName() + " version "
-				+ pdfFile.getVersion() + " is enabled!");
-	}
+        cm = new ConfigManager(this, "./plugins/DwarfCraft/",
+                "DwarfCraft.config");
+        dm = new DataManager(this, cm);
+        out = new Out(this);
 
+        // readGreeterMessagesfile() depends on datamanager existing, so this
+        // has to go here
+        if (!getConfigManager().readGreeterMessagesfile()) {
+            System.out.println("[SEVERE] Failed to read DwarfCraft Greeter Messages)");
+            getServer().getPluginManager().disablePlugin(this);
+        }
+
+
+        PluginDescriptionFile pdfFile = this.getDescription();
+        System.out.println(pdfFile.getName() + " version "
+                + pdfFile.getVersion() + " is enabled!");
+    }
 }
